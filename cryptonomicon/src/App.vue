@@ -145,6 +145,7 @@ export default {
         { name: "DEMO2", price: "23524" },
         { name: "DEMO3", price: "98798" },
       ],
+      sel: null,
     };
   },
 
