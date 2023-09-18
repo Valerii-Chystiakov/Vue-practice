@@ -197,11 +197,28 @@ export default {
       sel: null,
       graph: [],
       listOfNames: [],
+      intervalID: null,
+      tickersData: [],
     };
+  },
+
+  created() {
+    this.tickersData = localStorage.getItem("cryptonomicon-list");
+
+    if (this.tickersData) {
+      this.tickers = JSON.parse(this.tickersData);
+      this.tickers.forEach((ticker) => {
+        /* eslint-disable-next-line no-unused-vars */
+        this.intervalID = setInterval(() => {
+          this.fetchAndProcessTickerData(ticker);
+        }, 6000);
+      });
+    }
   },
 
   methods: {
     fetchAndProcessTickerData(newTicker) {
+      console.log(newTicker);
       fetch(
         `https://min-api.cryptocompare.com/data/price?fsym=${newTicker.name}&tsyms=USD&api_key=89070d6ae5c802d1bbf5007c8e6b1644f9d151ff34df51d382c9d017f30b3a2e`
       )
@@ -218,20 +235,29 @@ export default {
           if (this.sel?.name === newTicker.name) {
             this.graph.push(data.USD);
           }
+
+          localStorage.setItem(
+            "cryptonomicon-list",
+            JSON.stringify(this.tickers)
+          );
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
         });
     },
+
     add() {
       const newTicker = { name: this.ticker, price: "-" };
       if (this.listOfNames.indexOf(newTicker.name) === -1) {
         this.listOfNames.push(newTicker.name);
         this.tickers.push(newTicker);
-        /* eslint-disable-next-line no-unused-vars */
-        let intervalID = setInterval(() => {
+        console.log(this.tickers);
+
+        console.log(localStorage);
+
+        this.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(newTicker);
-        }, 3000);
+        }, 6000);
       }
       this.ticker = "";
     },
@@ -242,13 +268,20 @@ export default {
     },
 
     handleDelete(tickerToRemove) {
+      clearInterval(this.intervalID);
       this.tickers = this.tickers.filter((number) => number != tickerToRemove);
-      setTimeout(function () {
-        clearInterval(this.intervalID);
-      }, 0);
       this.listOfNames = this.listOfNames.filter(
         (name) => name != tickerToRemove.name
       );
+      console.log(localStorage);
+      const cryptoList = JSON.parse(this.tickersData);
+      localStorage.setItem(
+        "cryptonomicon-list",
+        JSON.stringify(
+          cryptoList.filter((item) => item.name !== tickerToRemove.name)
+        )
+      );
+      console.log(localStorage);
     },
 
     normalizeGraph() {
