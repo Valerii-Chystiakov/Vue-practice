@@ -212,13 +212,15 @@ export default {
         this.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(ticker);
         }, 6000);
+        console.log(`add fetch for ${ticker.name}`);
+        console.log(this.intervalID);
       });
     }
   },
 
   methods: {
     fetchAndProcessTickerData(newTicker) {
-      console.log(newTicker);
+      console.log(`fetching... ${newTicker.name} - ${newTicker.price}`);
       fetch(
         `https://min-api.cryptocompare.com/data/price?fsym=${newTicker.name}&tsyms=USD&api_key=89070d6ae5c802d1bbf5007c8e6b1644f9d151ff34df51d382c9d017f30b3a2e`
       )
@@ -258,6 +260,8 @@ export default {
         this.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(newTicker);
         }, 6000);
+        console.log("add fetch");
+        console.log(this.intervalID);
       }
       this.ticker = "";
     },
@@ -268,6 +272,8 @@ export default {
     },
 
     handleDelete(tickerToRemove) {
+      console.log(`removing ${tickerToRemove.name}`);
+      console.log(`intervalID ${this.intervalID}`);
       clearInterval(this.intervalID);
       this.tickers = this.tickers.filter((number) => number != tickerToRemove);
       this.listOfNames = this.listOfNames.filter(
