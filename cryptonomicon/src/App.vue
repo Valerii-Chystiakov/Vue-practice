@@ -100,11 +100,13 @@
         </button>
       </section>
       <template v-if="tickers.length > 0">
-        <div>Фільтр</div>
+        <div>
+          <div>Фільтр: <input v-model="filter" /></div>
+        </div>
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div
-            v-for="number in tickers"
+            v-for="number in filteredTickers()"
             v-bind:key="number"
             @click="select(number)"
             :class="{
@@ -200,6 +202,7 @@ export default {
       listOfNames: [],
       intervalID: null,
       tickersData: [],
+      filter: "",
     };
   },
 
@@ -220,6 +223,10 @@ export default {
   },
 
   methods: {
+    filteredTickers() {
+      return this.tickers.filter((ticker) => ticker.name.includes(this.filter));
+    },
+
     fetchAndProcessTickerData(newTicker) {
       console.log(`fetching... ${newTicker.name} - ${newTicker.price}`);
       fetch(
