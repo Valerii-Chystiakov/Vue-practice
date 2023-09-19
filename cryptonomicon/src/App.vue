@@ -101,7 +101,19 @@
       </section>
       <template v-if="tickers.length > 0">
         <div>
-          <div>Фільтр: <input v-model="filter" /></div>
+          <div class="flex inline-flex items-center">
+            Фільтр:
+            <div class="mt-1 rounded-md shadow-md">
+              <input v-model="filter" />
+            </div>
+            <button
+              v-on:click="clearFilter()"
+              type="button"
+              class="my-4 ml-2 py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Очистити
+            </button>
+          </div>
         </div>
         <hr class="w-full border-t border-gray-600 my-4" />
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -216,7 +228,7 @@ export default {
         this.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(ticker);
         }, 6000);
-        console.log(`add fetch for ${ticker.name}`);
+        console.log(`add fetch from localStorage - ${ticker.name}`);
         console.log(this.intervalID);
       });
     }
@@ -228,9 +240,14 @@ export default {
         ticker.name.toLowerCase().includes(this.filter.toLowerCase())
       );
     },
+    clearFilter() {
+      this.filter = "";
+    },
 
     fetchAndProcessTickerData(newTicker) {
-      console.log(`fetching... ${newTicker.name} - ${newTicker.price}`);
+      console.log(
+        `fetching... ${newTicker.name} - ${newTicker.price} - ${this.intervalID}`
+      );
       fetch(
         `https://min-api.cryptocompare.com/data/price?fsym=${newTicker.name}&tsyms=USD&api_key=89070d6ae5c802d1bbf5007c8e6b1644f9d151ff34df51d382c9d017f30b3a2e`
       )
@@ -270,7 +287,7 @@ export default {
         this.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(newTicker);
         }, 6000);
-        console.log("add fetch");
+        console.log(`add fetch add - ${newTicker.name}`);
         console.log(this.intervalID);
       }
       this.ticker = "";
@@ -282,21 +299,29 @@ export default {
     },
 
     handleDelete(tickerToRemove) {
-      console.log(`removing ${tickerToRemove.name}`);
-      console.log(`intervalID ${this.intervalID}`);
+      console.log(`removing ${tickerToRemove.name} - ${this.intervalID}`);
       clearInterval(this.intervalID);
-      this.tickers = this.tickers.filter((number) => number != tickerToRemove);
-      this.listOfNames = this.listOfNames.filter(
-        (name) => name != tickerToRemove.name
+      this.tickers = this.tickers.filter(
+        (ticker) => ticker.name !== tickerToRemove.name
       );
-      console.log(localStorage);
+      this.listOfNames = this.listOfNames.filter(
+        (name) => name !== tickerToRemove.name
+      );
+
       const cryptoList = JSON.parse(this.tickersData);
+      const updatedCryptoList = cryptoList.filter(
+        (item) => item.name !== tickerToRemove.name
+      );
+
       localStorage.setItem(
         "cryptonomicon-list",
-        JSON.stringify(
-          cryptoList.filter((item) => item.name !== tickerToRemove.name)
-        )
+        JSON.stringify(updatedCryptoList)
       );
+
+      if (this.tickers.length === 0) {
+        localStorage.removeItem("cryptonomicon-list");
+      }
+
       console.log(localStorage);
     },
 
