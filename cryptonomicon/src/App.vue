@@ -224,7 +224,9 @@ export default {
 
   methods: {
     filteredTickers() {
-      return this.tickers.filter((ticker) => ticker.name.includes(this.filter));
+      return this.tickers.filter((ticker) =>
+        ticker.name.toLowerCase().includes(this.filter.toLowerCase())
+      );
     },
 
     fetchAndProcessTickerData(newTicker) {
