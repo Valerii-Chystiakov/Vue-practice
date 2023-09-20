@@ -224,12 +224,11 @@ export default {
     if (this.tickersData) {
       this.tickers = JSON.parse(this.tickersData);
       this.tickers.forEach((ticker) => {
-        /* eslint-disable-next-line no-unused-vars */
         this.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(ticker);
         }, 6000);
         console.log(`add fetch from localStorage - ${ticker.name}`);
-        console.log(this.intervalID);
+        console.log(ticker.intervalID);
       });
     }
   },
@@ -245,50 +244,50 @@ export default {
     },
 
     fetchAndProcessTickerData(newTicker) {
-      console.log(
-        `fetching... ${newTicker.name} - ${newTicker.price} - ${this.intervalID}`
-      );
-      fetch(
-        `https://min-api.cryptocompare.com/data/price?fsym=${newTicker.name}&tsyms=USD&api_key=89070d6ae5c802d1bbf5007c8e6b1644f9d151ff34df51d382c9d017f30b3a2e`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          const tickerToUpdate = this.tickers.find(
-            (number) => number.name === newTicker.name
-          );
-          if (tickerToUpdate) {
-            tickerToUpdate.price =
-              data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-          }
+      if (newTicker.intervalID) {
+        console.log(
+          `fetching... ${newTicker.name} - ${newTicker.price} - ${newTicker.intervalID}`
+        );
+        fetch(
+          `https://min-api.cryptocompare.com/data/price?fsym=${newTicker.name}&tsyms=USD&api_key=89070d6ae5c802d1bbf5007c8e6b1644f9d151ff34df51d382c9d017f30b3a2e`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            const tickerToUpdate = this.tickers.find(
+              (number) => number.name === newTicker.name
+            );
+            if (tickerToUpdate) {
+              tickerToUpdate.price =
+                data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+            }
 
-          if (this.sel?.name === newTicker.name) {
-            this.graph.push(data.USD);
-          }
+            if (this.sel?.name === newTicker.name) {
+              this.graph.push(data.USD);
+            }
 
-          localStorage.setItem(
-            "cryptonomicon-list",
-            JSON.stringify(this.tickers)
-          );
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
+            localStorage.setItem(
+              "cryptonomicon-list",
+              JSON.stringify(this.tickers)
+            );
+          })
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+          });
+      }
     },
 
     add() {
-      const newTicker = { name: this.ticker, price: "-" };
+      const newTicker = { name: this.ticker, price: "-", intervalID: null };
       if (this.listOfNames.indexOf(newTicker.name) === -1) {
         this.listOfNames.push(newTicker.name);
         this.tickers.push(newTicker);
-        console.log(this.tickers);
 
-        console.log(localStorage);
-
-        this.intervalID = setInterval(() => {
+        newTicker.intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(newTicker);
         }, 6000);
+
         console.log(`add fetch add - ${newTicker.name}`);
-        console.log(this.intervalID);
+        console.log(newTicker.intervalID);
       }
       this.ticker = "";
     },
@@ -299,11 +298,17 @@ export default {
     },
 
     handleDelete(tickerToRemove) {
-      console.log(`removing ${tickerToRemove.name} - ${this.intervalID}`);
-      clearInterval(this.intervalID);
-      this.tickers = this.tickers.filter(
-        (ticker) => ticker.name !== tickerToRemove.name
+      console.log(
+        `removing ${tickerToRemove.name} - ${tickerToRemove.intervalID}`
       );
+      clearInterval(tickerToRemove.intervalID);
+      this.tickers = this.tickers.filter((ticker) => {
+        if (ticker.name === tickerToRemove.name) {
+          ticker.intervalID = null;
+          return false;
+        }
+        return true;
+      });
       this.listOfNames = this.listOfNames.filter(
         (name) => name !== tickerToRemove.name
       );
