@@ -122,7 +122,7 @@
             v-bind:key="number"
             @click="select(number)"
             :class="{
-              'border-4': sel == number,
+              'border-4': selectedTicker == number,
             }"
             class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
           >
@@ -156,9 +156,9 @@
           </div>
         </dl>
         <hr class="w-full border-t border-gray-600 my-4" />
-        <section v-if="sel" class="relative">
+        <section v-if="selectedTicker" class="relative">
           <h3 class="text-lg leading-6 font-medium text-gray-900 my-8">
-            {{ sel.name }} - USD
+            {{ selectedTicker.name }} - USD
           </h3>
           <div class="flex items-end border-gray-600 border-b border-l h-64">
             <div
@@ -169,7 +169,7 @@
             ></div>
           </div>
           <button
-            @click="sel = null"
+            @click="selectedTicker = null"
             type="button"
             class="absolute top-0 right-0"
           >
@@ -209,7 +209,7 @@ export default {
     return {
       ticker: "",
       tickers: [],
-      sel: null,
+      selectedTicker: null,
       graph: [],
       listOfNames: [],
       intervalID: null,
@@ -261,7 +261,7 @@ export default {
                 data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
             }
 
-            if (this.sel?.name === newTicker.name) {
+            if (this.selectedTicker?.name === newTicker.name) {
               this.graph.push(data.USD);
             }
 
@@ -293,7 +293,7 @@ export default {
     },
 
     select(ticker) {
-      this.sel = ticker;
+      this.selectedTicker = ticker;
       this.graph = [];
     },
 
