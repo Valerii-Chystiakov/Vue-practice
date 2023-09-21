@@ -215,6 +215,7 @@ export default {
       intervalID: null,
       tickersData: [],
       filter: "",
+      intervalIDs: {},
     };
   },
 
@@ -224,11 +225,13 @@ export default {
     if (this.tickersData) {
       this.tickers = JSON.parse(this.tickersData);
       this.tickers.forEach((ticker) => {
-        this.intervalID = setInterval(() => {
+        const intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(ticker);
         }, 6000);
+        ticker.intervalID = intervalID;
+        this.intervalIDs[ticker.name] = intervalID; // Зберігаємо intervalID в об'єкті intervalIDs
         console.log(`add fetch from localStorage - ${ticker.name}`);
-        console.log(ticker.intervalID);
+        console.log(intervalID);
       });
     }
   },
@@ -277,17 +280,21 @@ export default {
     },
 
     add() {
-      const newTicker = { name: this.ticker, price: "-", intervalID: null };
+      const newTicker = { name: this.ticker, price: "-" };
       if (this.listOfNames.indexOf(newTicker.name) === -1) {
         this.listOfNames.push(newTicker.name);
         this.tickers.push(newTicker);
+        console.log(this.tickers);
 
-        newTicker.intervalID = setInterval(() => {
+        console.log(localStorage);
+
+        const intervalID = setInterval(() => {
           this.fetchAndProcessTickerData(newTicker);
         }, 6000);
-
+        newTicker.intervalID = intervalID;
+        this.intervalIDs[newTicker.name] = intervalID; // Зберігаємо intervalID в об'єкті intervalIDs
         console.log(`add fetch add - ${newTicker.name}`);
-        console.log(newTicker.intervalID);
+        console.log(intervalID);
       }
       this.ticker = "";
     },
@@ -302,29 +309,27 @@ export default {
         `removing ${tickerToRemove.name} - ${tickerToRemove.intervalID}`
       );
       clearInterval(tickerToRemove.intervalID);
-      this.tickers = this.tickers.filter((ticker) => {
-        if (ticker.name === tickerToRemove.name) {
-          ticker.intervalID = null;
-          return false;
-        }
-        return true;
-      });
+      this.tickers = this.tickers.filter(
+        (ticker) => ticker.name !== tickerToRemove.name
+      );
       this.listOfNames = this.listOfNames.filter(
         (name) => name !== tickerToRemove.name
       );
 
-      const cryptoList = JSON.parse(this.tickersData);
-      const updatedCryptoList = cryptoList.filter(
-        (item) => item.name !== tickerToRemove.name
-      );
+      if (this.tickersData) {
+        const cryptoList = JSON.parse(this.tickersData);
+        const updatedCryptoList = cryptoList.filter(
+          (item) => item.name !== tickerToRemove.name
+        );
 
-      localStorage.setItem(
-        "cryptonomicon-list",
-        JSON.stringify(updatedCryptoList)
-      );
+        localStorage.setItem(
+          "cryptonomicon-list",
+          JSON.stringify(updatedCryptoList)
+        );
 
-      if (this.tickers.length === 0) {
-        localStorage.removeItem("cryptonomicon-list");
+        if (this.tickers.length === 0) {
+          localStorage.removeItem("cryptonomicon-list");
+        }
       }
 
       console.log(localStorage);
