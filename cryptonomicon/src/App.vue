@@ -202,6 +202,9 @@
 </template>
 
 <script>
+import { fetchTickerData } from "./fetchTickerData.js";
+import { processTickerData } from "./processTickerData.js";
+
 export default {
   name: "App",
 
@@ -231,7 +234,7 @@ export default {
       this.tickers = JSON.parse(this.tickersData);
       this.tickers.forEach((ticker) => {
         const intervalID = setInterval(() => {
-          this.fetchAndProcessTickerData(ticker);
+          this.fetchDataAndProcess(ticker);
         }, 6000);
         ticker.intervalID = intervalID;
         this.intervalIDs[ticker.name] = intervalID; // Зберігаємо intervalID в об'єкті intervalIDs
@@ -251,37 +254,20 @@ export default {
       this.filter = "";
     },
 
-    fetchAndProcessTickerData(newTicker) {
-      if (newTicker.intervalID) {
-        console.log(
-          `fetching... ${newTicker.name} - ${newTicker.price} - ${newTicker.intervalID}`
-        );
-        fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${newTicker.name}&tsyms=USD&api_key=89070d6ae5c802d1bbf5007c8e6b1644f9d151ff34df51d382c9d017f30b3a2e`
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            const tickerToUpdate = this.tickers.find(
-              (number) => number.name === newTicker.name
-            );
-            if (tickerToUpdate) {
-              tickerToUpdate.price =
-                data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-            }
-
-            if (this.selectedTicker?.name === newTicker.name) {
-              this.graph.push(data.USD);
-            }
-
-            localStorage.setItem(
-              "cryptonomicon-list",
-              JSON.stringify(this.tickers)
-            );
-          })
-          .catch((error) => {
-            console.error("Error fetching data:", error);
-          });
-      }
+    fetchDataAndProcess(newTicker) {
+      fetchTickerData(newTicker)
+        .then((data) => {
+          processTickerData(
+            this.tickers,
+            this.selectedTicker,
+            this.graph,
+            newTicker,
+            data
+          );
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     },
 
     add() {
@@ -296,7 +282,7 @@ export default {
         console.log(localStorage);
 
         const intervalID = setInterval(() => {
-          this.fetchAndProcessTickerData(newTicker);
+          this.fetchDataAndProcess(newTicker);
         }, 6000);
         newTicker.intervalID = intervalID;
         this.intervalIDs[newTicker.name] = intervalID; // Зберігаємо intervalID в об'єкті intervalIDs
