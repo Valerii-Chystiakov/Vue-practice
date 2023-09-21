@@ -214,6 +214,7 @@ export default {
       listOfNames: [],
       intervalID: null,
       tickersData: [],
+      tickersNamesData: [],
       filter: "",
       intervalIDs: {},
     };
@@ -221,7 +222,11 @@ export default {
 
   created() {
     this.tickersData = localStorage.getItem("cryptonomicon-list");
-
+    this.tickersNamesData = localStorage.getItem("cryptonomicon-names");
+    if (this.tickersNamesData) {
+      this.listOfNames = JSON.parse(this.tickersNamesData);
+    }
+    console.log(this.listOfNames);
     if (this.tickersData) {
       this.tickers = JSON.parse(this.tickersData);
       this.tickers.forEach((ticker) => {
@@ -281,6 +286,8 @@ export default {
 
     add() {
       const newTicker = { name: this.ticker, price: "-" };
+      console.log(typeof this.listOfNames);
+      console.log(this.listOfNames);
       if (this.listOfNames.indexOf(newTicker.name) === -1) {
         this.listOfNames.push(newTicker.name);
         this.tickers.push(newTicker);
@@ -295,6 +302,16 @@ export default {
         this.intervalIDs[newTicker.name] = intervalID; // Зберігаємо intervalID в об'єкті intervalIDs
         console.log(`add fetch add - ${newTicker.name}`);
         console.log(intervalID);
+        console.log(this.tickers);
+        console.log(this.listOfNames);
+        localStorage.setItem(
+          "cryptonomicon-list",
+          JSON.stringify(this.tickers)
+        );
+        localStorage.setItem(
+          "cryptonomicon-names",
+          JSON.stringify(this.listOfNames)
+        );
       }
       this.ticker = "";
     },
