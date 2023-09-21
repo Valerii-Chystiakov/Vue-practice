@@ -332,6 +332,10 @@ export default {
       this.listOfNames = this.listOfNames.filter(
         (name) => name !== tickerToRemove.name
       );
+      localStorage.setItem(
+        "cryptonomicon-names",
+        JSON.stringify(this.listOfNames)
+      );
 
       if (this.tickersData) {
         const cryptoList = JSON.parse(this.tickersData);
